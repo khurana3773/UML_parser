@@ -1,6 +1,10 @@
 # UML_parser
 This application is designed to convert Java code into UML diagrams, with certain conditions mentioned below.
 
+# Tools Used
+This Application internally uses, [Javaparser](http://javaparser.org/) and [PlantUml](http://plantuml.com/).
+JavaParser is used to get the names of classes, and their datamembers.
+PlantUml is used to draw the UML diagram to .png file.
 # Conditions on input/output
 -**Default Package**: All Java source files will be in the "default" package.  That is, there will be only one directory (i.e. no subdirectories)
 -**Dependencies & Uses Relationships for Interfaces Only**:  Do not include dependencies in output UML diagram except in the cases of "interfaces/uses"
