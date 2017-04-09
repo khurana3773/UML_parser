@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>UML_parser2</groupId>
-  <artifactId>UML_parser2</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>UML_parser</groupId>
+  <artifactId>UML_parser</artifactId>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
-  <name>UML_parser2</name>
+  <name>UML_parser</name>
   <url>http://maven.apache.org</url>
 
   <properties>
