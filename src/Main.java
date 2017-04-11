@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -19,6 +20,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -39,9 +41,11 @@ public class Main
 		// String srcFolder = args[0];
 		// String outputFolder = args[1];
 
+	
 		// temp, hard code file location:
-		String srcFolder = "C:/Software/202/cmpe202-master/umlparser";
+		String srcFolder = "C:/Software/202/cmpe202-master/umlparser/uml-parser-test-1";
 
+		
 		System.out.println(srcFolder);
 		File mainFolder = new File(srcFolder);
 		if (!mainFolder.exists())
@@ -55,13 +59,21 @@ public class Main
 
 		try
 		{
-			testUML();
+			//testUML();
 			plantUmlSource = new StringBuilder();			
-			plantUmlSource.append("@startuml\n");
+			plantUmlSource.append("@startuml \n");
+			plantUmlSource.append("!pragma graphviz_dot jdot \n");
+			plantUmlSource.append("skinparam classAttributeIconSize 0 \n");
 			getFiles(mainFolder);
 			doSomething();
 			
 			plantUmlSource.append("@enduml");
+			
+			System.out.println(plantUmlSource);
+			
+			SourceStringReader reader = new SourceStringReader(plantUmlSource.toString());
+			FileOutputStream output = new FileOutputStream(new File("C:\\Software\\202\\test\\test.png"));
+			reader.generateImage(output, new FileFormatOption(FileFormat.PNG, false));
 			
 		}
 		catch (FileNotFoundException e)
@@ -83,10 +95,22 @@ public class Main
 	{
 			Set<Entry<String,CompilationUnit>> entrySet = classesAndCu.entrySet();
 			
+			
 			for (Entry<String, CompilationUnit> entry : entrySet)
 			{
+				plantUmlSource.append("class ");
+				
+				
+				plantUmlSource.append(entry.getKey());
+				plantUmlSource.append("{ ");
 				CompilationUnit cu = entry.getValue();
-				createHierarchy(cu);				
+				
+				
+				createHierarchy(entry.getKey() , cu);
+				
+				plantUmlSource.append("\n ");
+				plantUmlSource.append("} ");
+				plantUmlSource.append("\n ");
 			}
 	}
 
@@ -126,7 +150,7 @@ public class Main
 		
 	}
 
-	private static void createHierarchy(CompilationUnit cu)
+	private static void createHierarchy(String className,CompilationUnit cu)
 	{
 		// Go through all the types in the file
 		NodeList<TypeDeclaration<?>> types = cu.getTypes();
@@ -140,7 +164,32 @@ public class Main
 				if (member instanceof MethodDeclaration)
 				{
 					MethodDeclaration method = (MethodDeclaration) member;
-					System.out.println(method);
+					EnumSet<Modifier> modifiers = method.getModifiers();
+					AccessSpecifier accessSpecifier = Modifier.getAccessSpecifier(modifiers);
+					if (accessSpecifier.equals(AccessSpecifier.PUBLIC))
+					{
+						plantUmlSource.append("\n");
+						plantUmlSource.append("+"+ method.getName() +"(" );
+						NodeList<Parameter> parameters = method.getParameters();
+						ListIterator<Parameter> listIterator = parameters.listIterator(0);
+						
+						while(listIterator.hasNext())
+						{
+							Parameter parameter = listIterator.next();
+							plantUmlSource.append(parameter.getName());
+							
+							if(listIterator.hasNext()==true)
+							{
+								plantUmlSource.append(",");
+							}
+						}
+						
+						plantUmlSource.append(")");
+						
+					} 
+					
+					
+					plantUmlSource.append("\n");
 
 				}
 
@@ -156,23 +205,29 @@ public class Main
 					// Modifier next = iterator.next();
 					// next.getAccessSpecifier(modifiers)
 					// }
+					System.out.println(field.getClass());
+					if(classesAndCu.containsKey(field.getClass()))
+					{
+						plantUmlSource.append(" \n ");
+						plantUmlSource.append(" + " +field  );
+						plantUmlSource.append(" \n ");
+						
+					}
 
 					if (accessSpecifier.equals(AccessSpecifier.PUBLIC))
 					{
-
+						plantUmlSource.append(" \n ");
+						plantUmlSource.append(" + " +field  );
+						plantUmlSource.append(" \n ");
 					}
-					else if (accessSpecifier.equals(AccessSpecifier.PROTECTED))
-					{
-
-					}
+					
 					else if (accessSpecifier.equals(AccessSpecifier.PRIVATE))
 					{
-						
+						plantUmlSource.append(" \n ");
+						plantUmlSource.append(" - " +field  );
+						plantUmlSource.append(" \n ");
 					}
-					else
-					{
-
-					}
+				
 
 					// pw.write(s);
 
