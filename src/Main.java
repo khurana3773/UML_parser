@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.text.FieldView;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
@@ -22,8 +24,11 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
+import h.field_t;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.SourceStringReader;
@@ -34,6 +39,7 @@ public class Main
 	private static PrintWriter pw;
 	private static Map<String, CompilationUnit> classesAndCu = new HashMap<String, CompilationUnit>();
 	private static StringBuilder plantUmlSource;
+	private static StringBuilder writeDependency;
 
 	public static void main(String[] args)
 	{
@@ -98,6 +104,10 @@ public class Main
 			
 			for (Entry<String, CompilationUnit> entry : entrySet)
 			{
+				writeDependency = new StringBuilder();
+				
+				
+				
 				plantUmlSource.append("class ");
 				
 				
@@ -111,6 +121,9 @@ public class Main
 				plantUmlSource.append("\n ");
 				plantUmlSource.append("} ");
 				plantUmlSource.append("\n ");
+				
+				plantUmlSource.append(writeDependency);
+				
 			}
 	}
 
@@ -186,6 +199,7 @@ public class Main
 						
 						plantUmlSource.append(")");
 						
+						
 					} 
 					
 					
@@ -206,33 +220,39 @@ public class Main
 					// next.getAccessSpecifier(modifiers)
 					// }
 					System.out.println(field.getClass());
-					if(classesAndCu.containsKey(field.getClass()))
+					field.getNodeLists();
+					field.getChildNodes();
+					NodeList<VariableDeclarator> variables = field.getVariables();
+					
+					for (VariableDeclarator variable : variables)
 					{
-						plantUmlSource.append(" \n ");
-						plantUmlSource.append(" + " +field  );
-						plantUmlSource.append(" \n ");
+						String classNameInField = variable.getType().toString();
 						
-					}
-
-					if (accessSpecifier.equals(AccessSpecifier.PUBLIC))
-					{
-						plantUmlSource.append(" \n ");
-						plantUmlSource.append(" + " +field  );
-						plantUmlSource.append(" \n ");
+						if(classesAndCu.containsKey(classNameInField))
+						{
+							writeDependency.append(className + " ---- " +classNameInField);
+						}
+						else
+						{						
+							if (accessSpecifier.equals(AccessSpecifier.PUBLIC))
+							{
+								plantUmlSource.append(" \n ");
+								plantUmlSource.append(" + " +field  );
+								plantUmlSource.append(" \n ");
+							}
+							
+							else if (accessSpecifier.equals(AccessSpecifier.PRIVATE))
+							{
+								plantUmlSource.append(" \n ");
+								plantUmlSource.append(" - " +field  );
+								plantUmlSource.append(" \n ");
+							}
+						
+							
+						}
 					}
 					
-					else if (accessSpecifier.equals(AccessSpecifier.PRIVATE))
-					{
-						plantUmlSource.append(" \n ");
-						plantUmlSource.append(" - " +field  );
-						plantUmlSource.append(" \n ");
-					}
-				
-
-					// pw.write(s);
-
-					System.out.println(field);
-
+					
 				}
 
 			}
@@ -254,6 +274,13 @@ public class Main
 																	// and add
 																	// try catch
 				NodeList<TypeDeclaration<?>> types = cu.getTypes();
+				
+
+				cu.getNodesByType(FieldDeclaration.class).stream().
+		        filter(f -> f.getModifiers().contains(AccessSpecifier.PUBLIC)).
+		        forEach(f -> System.out.println("Check field at line " + f.getBegin().get().line));
+				
+				
 				classesAndCu.put(allFiles[i].getName(), cu);
 
 			}
