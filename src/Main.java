@@ -281,7 +281,7 @@ public class Main
 		        forEach(f -> System.out.println("Check field at line " + f.getBegin().get().line));
 				
 				
-				classesAndCu.put(allFiles[i].getName(), cu);
+				classesAndCu.put(allFiles[i].getName().substring(0, allFiles[i].getName().length()-4), cu);
 
 			}
 			else if (allFiles[i].isDirectory())
